@@ -6,6 +6,10 @@ import os
 
 app = Flask(__name__)
 
+
+ip="http://158.160.144.217:5000"
+
+
 logins=[]
 passwords={}
 tokens={}
@@ -63,6 +67,8 @@ def logout_post():
         response={'success':False, 'exception':{'message': 'Invalid accessToken for this user.'}}
         return response
     del tokens[login]
+    if token in running_games:
+        del running_games[token]
     response={'success':True,'exception':None}
     return response
 
@@ -217,7 +223,7 @@ def pick():
         game['cards'].pop(hand_id.index(cards[2]))
         if len(game['deck']) and len(game['cards'])<12:
             data={'accessToken':token}
-            url="http://158.160.144.217:5000/set/add"
+            url=ip+"/set/add"
             r=requests.post(url,json=data)
         game['score']+=100
         if len(game['cards'])<3:
@@ -227,6 +233,39 @@ def pick():
         response={'isSet':True, 'score': game['score'] }
         return response
 
+@app.post('/set/restart')
+def restart():
+    data = json.loads(request.data)
+    if 'accessToken' not in data or 'cards' not in data:
+        response={'success':False, 'exception':{'message':'Couldn`t find accessToken or cards.'}}
+        return response
+    token = data.get('accessToken')
+    if token not in running_games.keys():
+        response={'success':False, 'exception':{'message':'You didn`t joined any games.'}}
+    id = running_games[token]
+    game=games[id]
+    game['status']='ongoing'
+    name=[n for n in tokens.keys() if tokens[n]==token][0]
+    game['scores'].append({'name':name,'score':game['score']})
+    deck=[]
+    cards=[]
+    for i in range(81):
+        card={}
+        card['id']=i+1
+        card['color']=i//27+1
+        card['shape']=i%27//9+1
+        card['fill']=i%27%9//3+1
+        card['count']=i%27%9%3+1
+        deck.append(card)
+    for i in range(12):
+        j=randint(0,len(deck)-1)
+        card=deck.pop(j)
+        cards.append(card)
+    game['deck']=deck
+    game['cards']=cards
+    game['score']=0
+    response={'success':True, 'exception':None}
+    return response
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(host='0.0.0.0')
