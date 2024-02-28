@@ -91,8 +91,16 @@ def pick(l):
     print(r.status_code)
     print(r.text)
 
+def restart():
+    global token
+    data={'accessToken':token}
+    url=ip+'/set/restart'
+    r=requests.post(url,json=data)
+    print(r.status_code)
+    print(r.text)
+
 def interface():
-    command_list=['signup','login','logout','create','enter','field','add','score','pick','exit']
+    command_list=['signup','login','logout','create','enter','field','add','score','pick','restart','exit']
     while True:
         print('Список доступных команд: ', *command_list)
         command=input('Введите команду из списка:')
@@ -121,6 +129,8 @@ def interface():
         elif command=='pick':
             l=list(map(int, input('Введите через пробел id 3-ех карт. Чтобы посмотреть карты используйте комманду `field`.').split()))
             pick(l)
+        elif command=='restart':
+            restart()
         elif command=='exit':
             print('Ждем вашего возвращения.')
             break

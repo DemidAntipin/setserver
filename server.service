@@ -6,8 +6,7 @@ After=network.target
 User=demid
 Group=www-data
 WorkingDirectory=/home/demid/server
-ExecStart=/usr/bin/gunicorn --bind unix:/home/demid/server/server.sock --workers 3 -m 007 wsgi:app
-ExecStart=/usr/bin/python3 /home/demid/server/server.py
+ExecStart=/usr/bin/gunicorn --bind unix:/home/demid/server/server.sock --workers 3 -m 007 wsgi:app | /usr/bin/python3 /home/demid/server/server.py
 
 [Install]
 WantedBy=multi-user.target
